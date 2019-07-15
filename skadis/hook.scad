@@ -1,4 +1,4 @@
-// basic 2d hook parametric
+// Standalone Skadis hook for hanging items
 
 use <../Round-Anything/polyround.scad>;
 
@@ -11,7 +11,7 @@ template = [
 scale = 5;
 height = 5;
 
-$fn=36;
+$fn=36; // remove for dev
 
 linear_extrude(height) {
     round2d(2,2) polygon(template * scale);
