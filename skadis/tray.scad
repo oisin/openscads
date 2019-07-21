@@ -19,8 +19,8 @@ module hooks(length, depth, height) {
     echo(first_hook_x);
     echo(second_hook_x);
     // 2.5 for the wall thickness here 
-    translate([first_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height,hook_width);
-    translate([second_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height,hook_width);
+    translate([first_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height);
+    translate([second_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height);
 }
 
 module hex(x,y, render=true)
