@@ -11,7 +11,7 @@ use_hex_base = true;
 module hooks(length, depth, height) {
     // The hooks need to have 70mm between them to fit the board
     hook_separation = 70;
-    hook_width = 5;
+    hook_width = 4.25;
 
     first_hook_x = (length - hook_separation) / 2;
     second_hook_x = first_hook_x + hook_separation + hook_width;
@@ -19,8 +19,8 @@ module hooks(length, depth, height) {
     echo(first_hook_x);
     echo(second_hook_x);
     // 2.5 for the wall thickness here 
-    translate([first_hook_x,depth+12.5,0]) rotate(a=[90, 0, -90]) boxhook(height,hook_width);
-    translate([second_hook_x,depth+12.5,0]) rotate(a=[90, 0, -90]) boxhook(height,hook_width);
+    translate([first_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height,hook_width);
+    translate([second_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height,hook_width);
 }
 
 module hex(x,y, render=true)
