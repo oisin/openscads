@@ -23,7 +23,7 @@ module hooks(length, depth, height) {
     translate([second_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height);
 }
 
-module tray(x,y,z,wt,open_face=false) {
+module tray(x,y,z,wt,hl,open_face=false) {
     difference() {
         // basic cuboid shape
         cube([x, y, z]);
@@ -48,9 +48,10 @@ module tray(x,y,z,wt,open_face=false) {
             }
         };
     }
+
+    hooks(x, y, hl);
+    hexwall(length, depth, 5);
 };
 
-
-tray(length, depth, height, wall_thickness, true);
-hooks(length, depth, 55);
-hexwall(length, depth, 5);
+// DEV test
+// tray(length, depth, height, wall_thickness, 55, true);
