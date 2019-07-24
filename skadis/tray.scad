@@ -3,12 +3,7 @@
 use <boxhook.scad>
 use <hex.scad>
 
-length = 90;
-depth = 40;
-height = 35;
-wall_thickness = 2.5;
-
-module hooks(length, depth, height) {
+module hooks(length, depth, height, wt) {
     // The hooks need to have 75mm between them to fit the board
     hook_separation = 75;
     hook_width = 4.25;
@@ -16,11 +11,8 @@ module hooks(length, depth, height) {
     first_hook_x = (length - hook_separation) / 2;
     second_hook_x = first_hook_x + hook_separation + hook_width;
 
-    echo(first_hook_x);
-    echo(second_hook_x);
-    // 2.5 for the wall thickness here HARDCODE
-    translate([first_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height);
-    translate([second_hook_x,depth+12.5,height]) rotate(a=[0, 90, 180]) boxhook(height);
+    translate([first_hook_x,depth+10+wt,height]) rotate(a=[0, 90, 180]) boxhook(height);
+    translate([second_hook_x,depth+10+wt,height]) rotate(a=[0, 90, 180]) boxhook(height);
 }
 
 module tray(x,y,z,wt,hl,open_face=false) {
@@ -49,9 +41,6 @@ module tray(x,y,z,wt,hl,open_face=false) {
         };
     }
 
-    hooks(x, y, hl);
+    hooks(x, y, hl, wt);
     hexwall(length, depth, 5);
 };
-
-// DEV test
-// tray(length, depth, height, wall_thickness, 55, true);
