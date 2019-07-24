@@ -8,4 +8,11 @@ use <tray.scad>
 // The tray will be printed with an open face (the true part)
 // The tray will be printed with a honeycomb patterned base
 //
-tray(90, 40, 35, 2.5, 55, true);
+
+length=90;      // x
+height=35;      // z
+depth=40;       // y
+wall=2.5;
+hooks=height+20;
+open=true;
+tray(length, depth, height, wall, hooks, open);
