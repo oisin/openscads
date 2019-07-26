@@ -89,7 +89,7 @@ module tray(x,y,z,wt,hl,open_face=true) {
     }
 
     hooks(x, y, hl, wt);
-    hexwall(length, depth, 5);
+    hexwall(x, y, 5);
 };
 
 
