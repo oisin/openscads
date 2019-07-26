@@ -42,5 +42,5 @@ module tray(x,y,z,wt,hl,open_face=false) {
     }
 
     hooks(x, y, hl, wt);
-    hexwall(x, z, 5);
+    hexwall(x, y, wt*10);   // the z of the hex pattern is in 0.1mm, yes it is inconsistent 
 };
