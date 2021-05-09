@@ -15,7 +15,7 @@ module hooks(length, depth, height, wt) {
     translate([second_hook_x,depth+10+wt,height]) rotate(a=[0, 90, 180]) boxhook(height);
 }
 
-module tray(x,y,z,wt,hl,open_face=false) {
+module tray(x,y,z,wt,hl,open_face=false, hex_base=true) {
     difference() {
         // basic cuboid shape
         cube([x, y, z]);
@@ -42,5 +42,15 @@ module tray(x,y,z,wt,hl,open_face=false) {
     }
 
     hooks(x, y, hl, wt);
-    hexwall(x, y, wt*10);   // the z of the hex pattern is in 0.1mm, yes it is inconsistent 
+    if (hex_base) {
+        // The z-height of the hex pattern is in 0.1 units,
+        // everything else is in 1.0 units, hence the multiplier
+        hexwall(x, y, wt*10);    
+    } else {
+        // Boring old rectangular base here, which will render a
+        // lot quicker, but not as _fancy_ as the hex. Note that
+        // the hex was introduced as a way to save resin in the 
+        // first design, which was produced for a Photon printer
+        cube([x, y, wt]);
+    }
 };
