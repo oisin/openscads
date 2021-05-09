@@ -1,2 +1,3 @@
 *.photon
 .DS_Store
+*.stl
