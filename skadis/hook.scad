@@ -1,6 +1,6 @@
 // Standalone Skadis hook for hanging items
 
-use <../Round-Anything/polyround.scad>;
+use <../Round-Anything-1.0.0/polyround.scad>;
 
 template = [
     [0,3], [0,6], [3,6], [3,1], [7,1], [7,3], [8,3],

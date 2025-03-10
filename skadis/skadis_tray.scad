@@ -15,4 +15,5 @@ depth=40;       // y
 wall=2.5;
 hooks=height+20;
 open=true;
-tray(length, depth, height, wall, hooks, open);
+hexbase=true;
+tray(length, depth, height, wall, hooks, open, hexbase);

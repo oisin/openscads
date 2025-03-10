@@ -11,13 +11,13 @@
 //
 
 // Length of the box along the horizontal axis of the pegboard (mm)
-length=90; 
+length=90;
 
 // Height of the box along the vertical axis of the pegboard (mm)
 height=35;
 
 // Depth of storage in the box out from the pegboard (mm)
-depth=40; 
+depth=40;
 
 // Thickness of the box walls (mm)
 wall=2.5;
@@ -28,21 +28,24 @@ hooks=height+20;
 // The box can have an open face or a closed one (true or false)
 open="true";  // [true, false]
 
-tray(length, depth, height, wall, hooks, (open == "true"));
+// The box has a base that is honeycombed by default (true or false)
+hexbase="true"; // [true, false]
+
+tray(length, depth, height, wall, hooks, (open == "true"), (hexbase == "true"));
 
 
 module boxhook(length) {
-  unit = 5;  // 0.5 mm is ths size of the smallest feature 
+  unit = 5;  // 0.5 mm is ths size of the smallest feature
   width= 4.25; // optimal width for Skadis in mm
 
     linear_extrude(width) {
-        round2d(2,1) { 
+        round2d(2,1) {
           if (length >= 50) {
             // if the hook is to be long, then put a blip on it like so that it slots
             // in well and solidly to the board
             polygon([[0,0],[0,15],[40,15],[40,5],[35.5,5],[35.5,10],[5,10],[5,5],[10,5],[16,0]]);
             polygon([[40,15],[length, 15],[length, 10], [40,10]]);
-          } else {    
+          } else {
             // if the hook it to be less than 50mm in length then no need for a blip
             polygon([[0,0],[0,15],[length,15],[length,10],[5,10],[5,5],[10,5],[16,0]]);
           }
@@ -62,25 +65,25 @@ module hooks(length, depth, height, wt) {
     translate([second_hook_x,depth+10+wt,height]) rotate(a=[0, 90, 180]) boxhook(height);
 }
 
-module tray(x,y,z,wt,hl,open_face=true) {
+module tray(x,y,z,wt,hl,open_face=true,hex_base=true) {
     difference() {
         // basic cuboid shape
         cube([x, y, z]);
 
         // cut out the space from the basic cuboid shape
         // to make the tray
-        translate([wt,wt,0]) { 
+        translate([wt,wt,0]) {
             cube([x - wt * 2, y - wt * 2, z]);
         }
-        
+
         if (open_face) {
             difference() {
-                translate([0, 0, z / 4]) {                
+                translate([0, 0, z / 4]) {
                     // cut out part of the front face to reduce material
                     cube([x, y - wt, z / 1.5]);
                 };
 
-                // rigidity supports are useful to keep the shape if 
+                // rigidity supports are useful to keep the shape if
                 // content is a little weighty
                 translate([0,0,0]) cube([wt, wt, z]);
                 translate([x-wt, 0, 0]) cube([wt, wt, z]);
@@ -89,7 +92,17 @@ module tray(x,y,z,wt,hl,open_face=true) {
     }
 
     hooks(x, y, hl, wt);
-    hexwall(x, y, wt*10); // these units are not consistent I know.
+    if (hex_base) {
+        // The z-height of the hex pattern is in 0.1 units,
+        // everything else is in 1.0 units, hence the multiplier
+        hexwall(x, y, wt*10);
+    } else {
+        // Boring old rectangular base here, which will render a
+        // lot quicker, but not as _fancy_ as the hex. Note that
+        // the hex was introduced as a way to save resin in the
+        // first design, which was produced for a Photon printer
+        cube([x, y, wt]);
+    }
 };
 
 
@@ -118,7 +131,7 @@ function polyRound(radiipoints,fn=5,mode=0)=
     Lp=len(p),
     //remove the middle point of any three colinear points
     newrp=[
-      for(i=[0:len(p)-1]) if(isColinear(p[wrap(i-1,Lp)],p[wrap(i+0,Lp)],p[wrap(i+1,Lp)])==0||p[wrap(i+0,Lp)].z!=0)radiipoints[wrap(i+0,Lp)] 
+      for(i=[0:len(p)-1]) if(isColinear(p[wrap(i-1,Lp)],p[wrap(i+0,Lp)],p[wrap(i+1,Lp)])==0||p[wrap(i+0,Lp)].z!=0)radiipoints[wrap(i+0,Lp)]
     ],
     newrp2=processRadiiPoints(newrp),
     temp=[
@@ -190,7 +203,7 @@ function round3points(rp,fn)=
     //find circle centre
     tmid=getMidpoint(t12,t23),//midpoint between the two tangent points
     angCen=getAngle(tmid,p[1]),//angle from point 2 to circle centre
-    cen=[p[1][0]-cos(angCen)*circD,p[1][1]-sin(angCen)*circD] //circle center by offseting from point 2 
+    cen=[p[1][0]-cos(angCen)*circD,p[1][1]-sin(angCen)*circD] //circle center by offseting from point 2
   )
 	[t12,t23,cen];
 
@@ -214,7 +227,7 @@ function parallelFollow(rp,thick=4,minR=1,mode=1)=
     //find circle centre
     tmid=getMidpoint(t12,t23),//midpoint between the two tangent points
     angCen=getAngle(tmid,p[1]),//angle from point 2 to circle centre
-    cen=[p[1][0]-cos(angCen)*circD,p[1][1]-sin(angCen)*circD],//circle center by offseting from point 2 
+    cen=[p[1][0]-cos(angCen)*circD,p[1][1]-sin(angCen)*circD],//circle center by offseting from point 2
     outR=max(minR,rp[1][2]-thick*sgn*mode) //ensures radii are never too small.
   )
 	concat(cen,outR);
@@ -230,14 +243,14 @@ function findPoint(ang1,refpoint1,ang2,refpoint2,r=0)=
   )
 	[outputX,outputY,r];
 
-function RailCustomiser(rp,o1=0,o2,mode=0,minR=0,a1,a2)= 
+function RailCustomiser(rp,o1=0,o2,mode=0,minR=0,a1,a2)=
   /*This function takes a series of radii points and plots points to run along side at a constanit distance, think of it as offset but for line instead of a polygon
   rp=radii points, o1&o2=offset 1&2,minR=min radius, a1&2=angle 1&2
   mode=1 - include endpoints a1&2 are relative to the angle of the last two points and equal 90deg if not defined
   mode=2 - endpoints not included
   mode=3 - include endpoints a1&2 are absolute from the x axis and are 0 if not defined
   negative radiuses only allowed for the first and last radii points
-  
+
   As it stands this function could probably be tidied a lot, but it works, I'll tidy later*/
   let(
     o2undef=o2==undef?1:0,
@@ -263,7 +276,7 @@ function RailCustomiser(rp,o1=0,o2,mode=0,minR=0,a1,a2)=
             getAngle(rp[Lrp-1],rp[Lrp-2])+a2:
             a2,
     OffLn1=[for(i=[0:Lrp3]) o1==0?rp[i+1]:parallelFollow([rp[i],rp[i+1],rp[i+2]],o1,minR,mode=CWorCCW1)],
-    OffLn2=[for(i=[0:Lrp3]) o2==0?rp[i+1]:parallelFollow([rp[i],rp[i+1],rp[i+2]],o2b,minR,mode=CWorCCW2)],  
+    OffLn2=[for(i=[0:Lrp3]) o2==0?rp[i+1]:parallelFollow([rp[i],rp[i+1],rp[i+2]],o2b,minR,mode=CWorCCW2)],
     Rp1=abs(rp[0].z),
     Rp2=abs(rp[Lrp-1].z),
     endP1a=findPoint(getAngle(rp[0],rp[1]),         OffLn1[0],              a1,rp[0],     Rp1),
@@ -298,7 +311,7 @@ function RailCustomiser(rp,o1=0,o2,mode=0,minR=0,a1,a2)=
         OffLn2
     )//end of let()
   o2undef==1?OffLn1b:concat(OffLn2b,revList(OffLn1b));
-    
+
 function revList(list)=//reverse list
   let(Llist=len(list)-1)
   [for(i=[0:Llist]) list[Llist-i]];
@@ -306,16 +319,16 @@ function revList(list)=//reverse list
 function CWorCCW(p)=
 	let(
     Lp=len(p),
-	  e=[for(i=[0:Lp-1]) 
+	  e=[for(i=[0:Lp-1])
       (p[wrap(i+0,Lp)].x-p[wrap(i+1,Lp)].x)*(p[wrap(i+0,Lp)].y+p[wrap(i+1,Lp)].y)
     ]
-  )  
+  )
   sign(sum(e));
 
 function CentreN2PointsArc(p1,p2,cen,mode=0,fn)=
   /* This function plots an arc from p1 to p2 with fn increments using the cen as the centre of the arc.
   the mode determines how the arc is plotted
-  mode==0, shortest arc possible 
+  mode==0, shortest arc possible
   mode==1, longest arc possible
   mode==2, plotted clockwise
   mode==3, plotted counter clockwise
@@ -339,7 +352,7 @@ function CentreN2PointsArc(p1,p2,cen,mode=0,fn)=
   [for(i=[0:fn]) [cos(p1Angle+(arcAngle/fn)*i*CWorCCW)*r+cen[0],sin(p1Angle+(arcAngle/fn)*i*CWorCCW)*r+cen[1]]];
 
 function moveRadiiPoints(rp,tran=[0,0],rot=0)=
-	[for(i=rp) 
+	[for(i=rp)
 		let(
       a=getAngle([0,0],[i.x,i.y]),//get the angle of the this point
 		  h=pointDist([0,0],[i.x,i.y]) //get the hypotenuse/radius
@@ -367,7 +380,7 @@ module shell2d(o1,OR=0,IR=0,o2=0){
 		round2d(IR,OR){
       difference(){//round the inside cutout
         offset(min(o1,o2)){
-          children(0);//shrink the 1st child to form the inside of the shell 
+          children(0);//shrink the 1st child to form the inside of the shell
         }
         if($children>1){
           for(i=[1:$children-1]){
@@ -424,11 +437,11 @@ function mirrorPoints(b,rot=0,atten=[0,0])= //mirrors a list of points about Y, 
     ],
     temp=moveRadiiPoints(temp3,[0,0],rot),
     temp2=revList(temp3)
-  )    
+  )
   concat(b,temp2);
 
 function processRadiiPoints(rp)=
-  [for(i=[0:len(rp)-1]) 
+  [for(i=[0:len(rp)-1])
     processRadiiPoints2(rp,i)
   ];
 
@@ -480,7 +493,7 @@ function relationalRadiiPoints(po,pi)=
               [cos(n0)*n1,sin(n0)*n1,n2]//abs angle, abs radius
             :absArelR(po,pn)//abs angle rel radius
           :nt1=="r"||nt1==undef?
-            [po[0]+cos(pn[0])*pn[1],po[1]+sin(pn[0])*pn[1],pn[2]]//rel angle, rel radius 
+            [po[0]+cos(pn[0])*pn[1],po[1]+sin(pn[0])*pn[1],pn[2]]//rel angle, rel radius
           :[pn[0],pn[1],pn[2]]//rel angle, abs radius
         :nv1=="x"?
           nt0=="a"?
@@ -488,14 +501,14 @@ function relationalRadiiPoints(po,pi)=
               [pn[1],pn[1]*tan(pn[0]),pn[2]]//abs angle, abs x
             :[po[0]+pn[1],(po[0]+pn[1])*tan(pn[0]),pn[2]]//abs angle rel x
             :nt1=="r"||nt1==undef?
-              [po[0]+pn[1],po[1]+pn[1]*tan(pn[0]),pn[2]]//rel angle, rel x 
+              [po[0]+pn[1],po[1]+pn[1]*tan(pn[0]),pn[2]]//rel angle, rel x
             :[pn[1],po[1]+(pn[1]-po[0])*tan(pn[0]),pn[2]]//rel angle, abs x
           :nt0=="a"?
             nt1=="a"||nt1==undef?
               [pn[1]/tan(pn[0]),pn[1],pn[2]]//abs angle, abs y
             :[(po[1]+pn[1])/tan(pn[0]),po[1]+pn[1],pn[2]]//abs angle rel y
           :nt1=="r"||nt1==undef?
-            [po[0]+(pn[1]-po[0])/tan(90-pn[0]),po[1]+pn[1],pn[2]]//rel angle, rel y 
+            [po[0]+(pn[1]-po[0])/tan(90-pn[0]),po[1]+pn[1],pn[2]]//rel angle, rel y
           :[po[0]+(pn[1]-po[1])/tan(pn[0]),pn[1],pn[2]]//rel angle, abs y
       :nv0=="r"?
         nv1=="x"?
@@ -504,21 +517,21 @@ function relationalRadiiPoints(po,pi)=
               [pn[1],sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),pn[2]]//abs radius, abs x
             :[po[0]+pn[1],sign(pn[0])*sqrt(sq(pn[0])-sq(po[0]+pn[1])),pn[2]]//abs radius rel x
           :nt1=="r"||nt1==undef?
-            [po[0]+pn[1],po[1]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),pn[2]]//rel radius, rel x 
+            [po[0]+pn[1],po[1]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),pn[2]]//rel radius, rel x
           :[pn[1],po[1]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1]-po[0])),pn[2]]//rel radius, abs x
         :nt0=="a"?
           nt1=="a"||nt1==undef?
             [sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),pn[1],pn[2]]//abs radius, abs y
           :[sign(pn[0])*sqrt(sq(pn[0])-sq(po[1]+pn[1])),po[1]+pn[1],pn[2]]//abs radius rel y
         :nt1=="r"||nt1==undef?
-          [po[0]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),po[1]+pn[1],pn[2]]//rel radius, rel y 
+          [po[0]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1])),po[1]+pn[1],pn[2]]//rel radius, rel y
         :[po[0]+sign(pn[0])*sqrt(sq(pn[0])-sq(pn[1]-po[1])),pn[1],pn[2]]//rel radius, abs y
       :nt0=="a"?
         nt1=="a"||nt1==undef?
           [pn[0],pn[1],pn[2]]//abs x, abs y
         :[pn[0],po[1]+pn[1],pn[2]]//abs x rel y
       :nt1=="r"||nt1==undef?
-        [po[0]+pn[0],po[1]+pn[1],pn[2]]//rel x, rel y 
+        [po[0]+pn[0],po[1]+pn[1],pn[2]]//rel x, rel y
       :[po[0]+pn[0],pn[1],pn[2]]//rel x, abs y
   )
   temp;
@@ -543,7 +556,7 @@ function cosineRuleAngle(p1,p2,p3)=
   )
   acos((sq(p23)+sq(p12)-sq(p13))/(2*p23*p12));
 
-function sum(list, idx = 0, result = 0) = 
+function sum(list, idx = 0, result = 0) =
 	idx >= len(list) ? result : sum(list, idx + 1, result + list[idx]);
 
 function sq(x)=x*x;
@@ -570,9 +583,9 @@ module line(p1, p2 ,width=0.3) { // single line plotter
 
 function getpoints(p)=[for(i=[0:len(p)-1])[p[i].x,p[i].y]];// gets [x,y]list of[x,y,r]list
 function wrap(x,x_max=1,x_min=0) = (((x - x_min) % (x_max - x_min)) + (x_max - x_min)) % (x_max - x_min) + x_min; // wraps numbers inside boundaries
-function rnd(a = 1, b = 0, s = []) = 
-  s == [] ? 
-    (rands(min(a, b), max(   a, b), 1)[0]):(rands(min(a, b), max(a, b), 1, s)[0]); // nice rands wrapper 
+function rnd(a = 1, b = 0, s = []) =
+  s == [] ?
+    (rands(min(a, b), max(   a, b), 1)[0]):(rands(min(a, b), max(a, b), 1, s)[0]); // nice rands wrapper
 
 
 
@@ -587,9 +600,9 @@ module hex(x,y, hex_radius, hex_border_width, height,render=true)
     if (render) {
         difference()
         {
-            translate([x,y,-height/20]) 
-                cylinder(r=(hex_radius+hex_border_width/20), h=height/10, $fn=6);	
-            translate([x,y,-height/20]) 
+            translate([x,y,-height/20])
+                cylinder(r=(hex_radius+hex_border_width/20), h=height/10, $fn=6);
+            translate([x,y,-height/20])
                 cylinder(r=(hex_radius-hex_border_width/20), h=height/10, $fn=6);
         }
     }
@@ -618,17 +631,17 @@ module hexwall(width, length, height, border_width=20, hex_radius=5, hex_border_
             for (xi=[0:xstep:width])
                 for(yi=[0:ystep:length])
                     hex(xi-width/2,((((xi/xstep)%2)==0)?0:ystep/2)+yi-length/2, hex_radius, hex_border_width, height);
-            translate([-width/2, -length/2, -height/20]) 
+            translate([-width/2, -length/2, -height/20])
                 cube([width,length,height/10]);
         }
 
         // Frame
         difference()
         {
-            translate([-width/2, -length/2, -height/20]) 
+            translate([-width/2, -length/2, -height/20])
                 cube([width,length,height/10]);
-            translate([-xborder/2, -yborder/2, -(height/20+0.1)]) 
-                cube([xborder,yborder,height/10+0.2]); 
+            translate([-xborder/2, -yborder/2, -(height/20+0.1)])
+                cube([xborder,yborder,height/10+0.2]);
         }
     }
 }
